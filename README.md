@@ -2,7 +2,7 @@
 
 A beautiful web app for focused studying with binaural beats, Pomodoro timer, and smart notes.
 
-**[Live Demo →](#)** *(Add your GitHub Pages link here)*
+**[Live Demo →](https://studywithmunir.github.io/Study-Room-Focus-Simulator/)**
 
 ---
 
@@ -115,7 +115,7 @@ A beautiful web app for focused studying with binaural beats, Pomodoro timer, an
 
 ---
 
-## � Common Issues
+## Common Issues
 
 **Sounds not playing?**
 - Click anywhere on the page first
@@ -131,7 +131,7 @@ A beautiful web app for focused studying with binaural beats, Pomodoro timer, an
 
 ---
 
-## � License
+## License
 
 MIT License - Free to use and modify!
 
