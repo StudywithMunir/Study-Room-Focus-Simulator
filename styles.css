@@ -982,3 +982,31 @@ kbd {
     border-radius: 50%;
     animation: ripple 0.6s ease-out;
 }
+
+/* ===================================
+   Footer
+   =================================== */
+.footer {
+    text-align: center;
+    padding: var(--spacing-lg) 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.footer kbd {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    font-family: var(--font-primary);
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Hide footer on mobile devices */
+@media (max-width: 768px) {
+    .footer {
+        display: none;
+    }
+}
