@@ -11,6 +11,7 @@ class SoundEngine {
             beta: { playing: false, nodes: [] },
             gamma: { playing: false, nodes: [] }
         };
+        this.currentPlayingSound = null; // Track currently playing sound
     }
 
     initAudioContext() {
@@ -171,6 +172,35 @@ class SoundEngine {
                 }
             }
         });
+        this.currentPlayingSound = null;
+    }
+
+    pauseSounds() {
+        // Pause currently playing sound (stop it but remember which one)
+        Object.keys(this.sounds).forEach(soundName => {
+            if (this.sounds[soundName].playing) {
+                this.currentPlayingSound = soundName;
+                this.stopSound(soundName);
+                const status = document.getElementById(`${soundName}Status`);
+                if (status) {
+                    status.textContent = '';
+                    status.classList.remove('playing');
+                }
+            }
+        });
+    }
+
+    async resumeSounds() {
+        // Resume the sound that was playing before pause
+        if (this.currentPlayingSound) {
+            const soundName = this.currentPlayingSound;
+            const isPlaying = await this.toggleSound(soundName);
+            const status = document.getElementById(`${soundName}Status`);
+            if (status) {
+                status.textContent = isPlaying ? 'Playing' : '';
+                status.classList.toggle('playing', isPlaying);
+            }
+        }
     }
 }
 
@@ -706,44 +736,66 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('startBtn').addEventListener('click', async () => {
         const btn = document.getElementById('startBtn');
         if (timer.isRunning) {
+            // Pause timer and sounds
             timer.pause();
+            soundEngine.pauseSounds();
             btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start';
         } else {
-            // Ask user which sound to play
-            const soundChoice = prompt(
-                "Which ambient sound would you like to play?\n\n" +
-                "1 - Rain 🌧️\n" +
-                "2 - Alpha Waves (10Hz) 🧠 - Relaxed focus\n" +
-                "3 - Theta Waves (6Hz) ✨ - Deep meditation\n" +
-                "4 - Beta Waves (20Hz) ⚡ - High alertness\n" +
-                "5 - Gamma Waves (40Hz) 🔥 - Peak focus\n" +
-                "0 - No sound (Silent)\n\n" +
-                "Enter number (0-5):"
-            );
+            // Check if timer was paused (resume) or starting fresh
+            const wasPaused = timer.timeRemaining < timer.totalTime;
 
-            // Map choice to sound name
-            const soundMap = {
-                '1': 'rain',
-                '2': 'alpha',
-                '3': 'theta',
-                '4': 'beta',
-                '5': 'gamma'
-            };
+            if (wasPaused) {
+                // Resume: just restart timer and sound
+                timer.start();
+                await soundEngine.resumeSounds();
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause';
+            } else {
+                // Starting fresh: ask user which sound to play
+                const soundChoice = prompt(
+                    "Which ambient sound would you like to play?\n\n" +
+                    "1 - Rain 🌧️\n" +
+                    "2 - Alpha Waves (10Hz) 🧠 - Relaxed focus\n" +
+                    "3 - Theta Waves (6Hz) ✨ - Deep meditation\n" +
+                    "4 - Beta Waves (20Hz) ⚡ - High alertness\n" +
+                    "5 - Gamma Waves (40Hz) 🔥 - Peak focus\n" +
+                    "0 - No sound (Silent)\n\n" +
+                    "Enter number (0-5):"
+                );
 
-            // Play selected sound if valid choice
-            if (soundChoice && soundMap[soundChoice]) {
-                const soundName = soundMap[soundChoice];
-                const isPlaying = await soundEngine.toggleSound(soundName);
-                const status = document.getElementById(`${soundName}Status`);
-                if (status) {
-                    status.textContent = isPlaying ? 'Playing' : '';
-                    status.classList.toggle('playing', isPlaying);
+                // Only start timer if user made a valid choice (including 0 for silent)
+                if (soundChoice !== null && soundChoice !== '') {
+                    // Map choice to sound name
+                    const soundMap = {
+                        '1': 'rain',
+                        '2': 'alpha',
+                        '3': 'theta',
+                        '4': 'beta',
+                        '5': 'gamma'
+                    };
+
+                    // Play selected sound if valid choice (not 0)
+                    if (soundMap[soundChoice]) {
+                        const soundName = soundMap[soundChoice];
+                        const isPlaying = await soundEngine.toggleSound(soundName);
+                        const status = document.getElementById(`${soundName}Status`);
+                        if (status) {
+                            status.textContent = isPlaying ? 'Playing' : '';
+                            status.classList.toggle('playing', isPlaying);
+                        }
+                        soundEngine.currentPlayingSound = soundName;
+                    } else if (soundChoice === '0') {
+                        // Silent mode - no sound
+                        soundEngine.currentPlayingSound = null;
+                    }
+
+                    // Start timer only if valid choice was made
+                    if (soundChoice === '0' || soundMap[soundChoice]) {
+                        timer.start();
+                        btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause';
+                    }
                 }
+                // If user cancelled (null) or invalid input, don't start timer
             }
-
-            // Start timer
-            timer.start();
-            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause';
         }
     });
 
